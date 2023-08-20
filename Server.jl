@@ -28,9 +28,15 @@ module Server
         resp(string(loadCharacter(name)))
     end
 
+    function refreshData(req)
+        loadData()
+        resp("Done")
+    end
+
     function initializeRoutes()
         registerRoute("/ping", req -> resp("Hello World !"))
         registerRoute("/char", queryCharacter)
+        registerRoute("/refresh", refreshData)
     end
 
     function startServer()
