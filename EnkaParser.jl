@@ -157,20 +157,23 @@ module EnkaParser
         end
 
         xs = map(x -> parseEntry(x), elm)
+        arts = filter(y -> y["type"] == "artefact", xs)
+        artsDict = Dict(map(x -> x["subtype"] => x, arts))
         Dict(
-            "artefacts" => filter(x -> x["type"] == "artefact", xs),
+            "artefacts" => artsDict,
             "weapon" => first(filter(x -> x["type"] == "weapon", xs))
         )
     end
 
     function getArtefactSetBonus(data)
         sets = DataFrame()
+        data = map(x -> data[x], collect(keys(data)))
         sets.name = map(x -> x["set"], data)
         sets.count .= 1
         gdf = groupby(sets, :name)
         sets = combine(gdf, :count => sum)
         sets = sets[sets.count_sum .> 1, :]
-        map(x -> artefactSetToBonus(x.name, x.count_sum), eachrow(sets))
+        Dict(map(x -> x[1] => x[2], map(x -> artefactSetToBonus(x.name, x.count_sum), eachrow(sets))))
     end
 
     function loadCharStat(data)

@@ -1,21 +1,26 @@
 module Server
     include("Database.jl")
     include("EnkaParser.jl")
-    using HTTP, Sockets
+    using HTTP, Sockets, JSON
     export runServer
-    export setFunctionLoadData, setFunctionUpdateCharacter, setFunctionLoadCharacters
+    export setFunctionLoadData, setFunctionUpdateCharacter, setFunctionLoadCharacters, setFunctionLoadCharacter, setFunctionClearDatabase
 
     host = ip"0.0.0.0"
     port = 8080
 
     router = HTTP.Router()
 
-    f_updateCharacter = x -> ()
-    f_loadData = () -> []
-    f_loadCharacters = () -> []
+    global f_updateCharacter = x -> ()
+    global f_loadData = () -> []
+    global f_loadCharacters = () -> []
+    global f_clearDatabase = () -> ()
 
     function setFunctionLoadData(f)
         global f_loadData = f
+    end
+
+    function setFunctionLoadCharacter(f)
+        global f_loadCharacter = f
     end
 
     function setFunctionUpdateCharacter(f)
@@ -24,6 +29,10 @@ module Server
 
     function setFunctionLoadCharacters(f)
         global f_loadCharacters = f
+    end
+
+    function setFunctionClearDatabase(f)
+        global f_clearDatabase = f
     end
 
     function registerRoute(path, f)
@@ -43,11 +52,16 @@ module Server
     function queryCharacter(req)
         params = convertTargetToParams(req.target)
         name = params["name"]
-        resp(string(f_loadCharacter(name)))
+        resp(string(JSON.json(f_loadCharacter(name))))
     end
 
     function queryAllCharacters(req)
-        resp(string(f_loadCharacters()))
+        resp(string(JSON.json(f_loadCharacters())))
+    end
+
+    function clearDatabase(req)
+        f_clearDatabase()
+        resp("Done")
     end
 
     function refreshData(req)
@@ -61,6 +75,7 @@ module Server
         registerRoute("/char", queryCharacter)
         registerRoute("/chars", queryAllCharacters)
         registerRoute("/refresh", refreshData)
+        registerRoute("/clear", clearDatabase)
     end
 
     function startServer()

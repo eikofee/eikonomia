@@ -9,6 +9,8 @@ module Eikonomia
         setFunctionLoadData(loadData)
         setFunctionLoadCharacters(loadCharacters)
         setFunctionUpdateCharacter(updateCharacter)
+        setFunctionLoadCharacter(loadCharacter)
+        setFunctionClearDatabase(clearDatabase)
         runServer()
     end
 

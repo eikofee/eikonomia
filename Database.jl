@@ -1,7 +1,7 @@
 module Database
 
     using Mongoc, Dates, JSON
-    export printCharacters, loadCharacter, updateCharacter, loadCharacters
+    export printCharacters, loadCharacter, updateCharacter, loadCharacters, clearDatabase
 
     client = Mongoc.Client()
     Mongoc.ping(client)
@@ -43,11 +43,16 @@ module Database
     end
 
     function loadCharacters()
-        map(x -> convertToJson(x), characters)
+        data = map(x -> convertToJson(x), characters)
+        Dict(map(x -> x["name"] => x, data))
     end
 
     function printCharacters()
         d = loadCharacters()
         foreach(x -> display(x), d)
+    end
+
+    function clearDatabase()
+        Mongoc.empty!(characters)
     end
 end
