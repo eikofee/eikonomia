@@ -2,14 +2,11 @@ module Eikonomia
 
     include("EnkaParser.jl")
     include("Database.jl")
-    using .EnkaParser, .Database
+    include("Server.jl")
+    using .EnkaParser, .Database, .Server
 
     function test()
-        chars = loadData()
-        for c in chars
-            saveCharacter(c)
-        end
-        printCharacters()
+        runServer()
     end
 
     test()
