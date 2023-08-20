@@ -6,6 +6,9 @@ module Eikonomia
     using .EnkaParser, .Database, .Server
 
     function test()
+        setFunctionLoadData(loadData)
+        setFunctionLoadCharacters(loadCharacters)
+        setFunctionUpdateCharacter(updateCharacter)
         runServer()
     end
 

@@ -1,13 +1,30 @@
 module Server
     include("Database.jl")
     include("EnkaParser.jl")
-    using HTTP, Sockets,.Database, .EnkaParser
+    using HTTP, Sockets
     export runServer
+    export setFunctionLoadData, setFunctionUpdateCharacter, setFunctionLoadCharacters
 
     host = ip"0.0.0.0"
     port = 8080
 
     router = HTTP.Router()
+
+    f_updateCharacter = x -> ()
+    f_loadData = () -> []
+    f_loadCharacters = () -> []
+
+    function setFunctionLoadData(f)
+        global f_loadData = f
+    end
+
+    function setFunctionUpdateCharacter(f)
+        global f_updateCharacter = f
+    end
+
+    function setFunctionLoadCharacters(f)
+        global f_loadCharacters = f
+    end
 
     function registerRoute(path, f)
         HTTP.@register(router, "GET", path, f)
@@ -26,16 +43,16 @@ module Server
     function queryCharacter(req)
         params = convertTargetToParams(req.target)
         name = params["name"]
-        resp(string(loadCharacter(name)))
+        resp(string(f_loadCharacter(name)))
     end
 
     function queryAllCharacters(req)
-        resp(string(loadCharacters()))
+        resp(string(f_loadCharacters()))
     end
 
     function refreshData(req)
-        data = loadData()
-        foreach(x -> updateCharacter(x), data)
+        data = f_loadData()
+        foreach(x -> f_updateCharacter(x), data)
         resp("Done")
     end
 
