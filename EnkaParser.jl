@@ -93,6 +93,33 @@ module EnkaParser
         statType[id]
     end
 
+    function transformArtefactStatValue(name, value)
+        statMultiplier = Dict(
+            "FIGHT_PROP_HP" => 1,
+            "FIGHT_PROP_ATTACK" => 1,
+            "FIGHT_PROP_DEFENSE" => 1,
+            "FIGHT_PROP_HP_PERCENT" => 0.01,
+            "FIGHT_PROP_ATTACK_PERCENT" => 0.01,
+            "FIGHT_PROP_DEFENSE_PERCENT" => 0.01,
+            "FIGHT_PROP_CRITICAL" => 0.01,
+            "FIGHT_PROP_CRITICAL_HURT" => 0.01,
+            "FIGHT_PROP_CHARGE_EFFICIENCY" => 0.01,
+            "FIGHT_PROP_HEAL_ADD" => 0.01,
+            "FIGHT_PROP_ELEMENT_MASTERY" => 1,
+            "FIGHT_PROP_PHYSICAL_ADD_HURT" => 0.01,
+            "FIGHT_PROP_FIRE_ADD_HURT" => 0.01,
+            "FIGHT_PROP_ELEC_ADD_HURT" => 0.01,
+            "FIGHT_PROP_WATER_ADD_HURT" => 0.01,
+            "FIGHT_PROP_WIND_ADD_HURT" => 0.01,
+            "FIGHT_PROP_ICE_ADD_HURT" => 0.01,
+            "FIGHT_PROP_ROCK_ADD_HURT" => 0.01,
+            "FIGHT_PROP_GRASS_ADD_HURT" => 0.01,
+            "FIGHT_PROP_BASE_ATTACK" => 1
+        )
+
+        value * statMultiplier[name]
+    end
+
     function artefactSetToBonus(set, count)
         setEffects2pc = Dict(
             "Blizzard Strayer" => ("Elem%", 0.15),
@@ -121,12 +148,15 @@ module EnkaParser
             "Vourukasha's Glow" => ("HP%", 0.2)
         )
         
+        bonus = ("None", 0)
         if count >= 2
             if set in collect(keys(setEffects2pc))
-                return setEffects2pc[set]
+                bonus = setEffects2pc[set]
+            else
+                bonus = ("Unknown", 2)
             end
         end
-        ("None", 0)
+        bonus
     end
 
     function loadEquipStats(elm)
@@ -139,9 +169,9 @@ module EnkaParser
                     "set" => translate(e["flat"]["setNameTextMapHash"]),
                     "subtype" => translateEquipType(e["flat"]["equipType"]),
                     "mainStatName" => translateArtefactStatName(e["flat"]["reliquaryMainstat"]["mainPropId"]),
-                    "mainStatValue" => e["flat"]["reliquaryMainstat"]["statValue"],
+                    "mainStatValue" => transformArtefactStatValue(e["flat"]["reliquaryMainstat"]["mainPropId"], e["flat"]["reliquaryMainstat"]["statValue"]),
                     "subStatNames" => map(x -> translateArtefactStatName(e["flat"]["reliquarySubstats"][x]["appendPropId"]), 1:4),
-                    "subStatValues" => map(x -> e["flat"]["reliquarySubstats"][x]["statValue"], 1:4)
+                    "subStatValues" => map(x -> transformArtefactStatValue(e["flat"]["reliquarySubstats"][x]["appendPropId"], e["flat"]["reliquarySubstats"][x]["statValue"]), 1:4)
                 )
             else
                 Dict(
@@ -151,7 +181,7 @@ module EnkaParser
                     "mainStatName" => translateArtefactStatName(e["flat"]["weaponStats"][1]["appendPropId"]),
                     "mainStatValue" => e["flat"]["weaponStats"][1]["statValue"],
                     "subStatName" => translateArtefactStatName(e["flat"]["weaponStats"][2]["appendPropId"]),
-                    "subStatValue" => e["flat"]["weaponStats"][2]["statValue"],
+                    "subStatValue" => transformArtefactStatValue(e["flat"]["weaponStats"][2]["appendPropId"], e["flat"]["weaponStats"][2]["statValue"]),
                 )
             end
         end
@@ -173,7 +203,8 @@ module EnkaParser
         gdf = groupby(sets, :name)
         sets = combine(gdf, :count => sum)
         sets = sets[sets.count_sum .> 1, :]
-        Dict(map(x -> x[1] => x[2], map(x -> artefactSetToBonus(x.name, x.count_sum), eachrow(sets))))
+        d = map(x -> artefactSetToBonus(x.name, x.count_sum), eachrow(sets))
+        [map(x -> x[1], d), map(x -> x[2], d)]
     end
 
     function loadCharStat(data)
@@ -207,9 +238,8 @@ module EnkaParser
 
             "weapon" => elm["weapon"],
             "artefacts" => elm["artefacts"],
-            "artefactSetBonus1" => get(artefactSetBonuses, 1, ("None", 0)),
-            "artefactSetBonus2" => get(artefactSetBonuses, 2, ("None", 0)),
-
+            "artefactSetBonusNames" => artefactSetBonuses[1],
+            "artefactSetBonusValues" => artefactSetBonuses[2],
             "equipHP" => fpm(2),
             "equipHP%" => fpm(3),
             "equipATK" => fpm(5),
