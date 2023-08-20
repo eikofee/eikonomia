@@ -40,7 +40,7 @@ module Server
     end
 
     function resp(content)
-        HTTP.Response(200, content)
+        HTTP.Response(200, ["Content-Type" => "application/json"]; body=content)
     end
 
     function convertTargetToParams(target)
