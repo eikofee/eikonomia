@@ -1,6 +1,7 @@
 module Server
     include("Database.jl")
-    using HTTP, Sockets,.Database
+    include("EnkaParser.jl")
+    using HTTP, Sockets,.Database, .EnkaParser
     export runServer
 
     host = ip"0.0.0.0"
@@ -28,14 +29,20 @@ module Server
         resp(string(loadCharacter(name)))
     end
 
+    function queryAllCharacters(req)
+        resp(string(loadCharacters()))
+    end
+
     function refreshData(req)
-        loadData()
+        data = loadData()
+        foreach(x -> updateCharacter(x), data)
         resp("Done")
     end
 
     function initializeRoutes()
         registerRoute("/ping", req -> resp("Hello World !"))
         registerRoute("/char", queryCharacter)
+        registerRoute("/chars", queryAllCharacters)
         registerRoute("/refresh", refreshData)
     end
 
