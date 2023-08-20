@@ -52,6 +52,7 @@ module Server
     function queryCharacter(req)
         params = convertTargetToParams(req.target)
         name = params["name"]
+        name = replace(name, "+"=>" ")
         resp(string(JSON.json(f_loadCharacter(name))))
     end
 
