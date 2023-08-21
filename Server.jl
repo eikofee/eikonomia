@@ -81,7 +81,7 @@ module Server
 
     function queryAllCharacters(req)
         params = convertTargetToParams(req.target)
-        if "rate" in keys(params) && params["rate"]
+        if "rate" in keys(params) && params["rate"] == "true"
             f_rateCharacters()
         end
 
