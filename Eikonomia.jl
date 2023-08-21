@@ -10,7 +10,27 @@ module Eikonomia
         data = loadData()
         map(x -> processAdditionalData(x), data)
     end
+
+    function rateCharacter(name)
+        rule = loadRatingRule(name)
+        if rule !== nothing
+            data = loadCharacter(name)
+            data["artefacts"] = rateArtefacts(data["artefacts"], rule["rule"])
+            updateCharacter(data)
+        end
+    end
+
+    function rateCharacters()
+        names = loadCharacterNames()
+        for n in names
+            rateCharacter(n)
+        end
+    end
+
     function test()
+        setFunctionSaveRatingRule(saveRatingRule)
+        setFunctionRateCharacter(rateCharacter)
+        setFunctionRateCharacters(rateCharacters)
         setFunctionLoadData(loadDataAndProcess)
         setFunctionLoadCharacters(loadCharacters)
         setFunctionUpdateCharacter(updateCharacter)

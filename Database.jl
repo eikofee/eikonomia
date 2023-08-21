@@ -1,12 +1,13 @@
 module Database
 
     using Mongoc, Dates, JSON
-    export printCharacters, loadCharacter, updateCharacter, loadCharacters, clearDatabase
+    export printCharacters, loadCharacter, updateCharacter, loadCharacters, clearDatabase, loadRatingRule, saveRatingRule, loadCharacterNames
 
     client = Mongoc.Client()
     Mongoc.ping(client)
     db = client["eikonomia"]
     characters = db["characters"]
+    ratingRules = db["ratingRules"]
 
     function findOne(collection, field, value)
         Mongoc.find_one(collection, Mongoc.BSON("{\"" * field * "\":\"" * value * "\"}"))
@@ -45,6 +46,23 @@ module Database
     function loadCharacters()
         data = map(x -> convertToJson(x), characters)
         Dict(map(x -> x["name"] => x, data))
+    end
+
+    function loadCharacterNames()
+        map(x -> x["name"], characters)
+    end
+
+    function loadRatingRule(name)
+        d = findOne(ratingRules, "name", name)
+        if d !== nothing
+            convertToJson(d)
+        end
+    end
+
+    function saveRatingRule(rule)
+        rule["lastUpdated"] = Dates.now()
+        d = Mongoc.BSON(JSON.json(rule))
+        push!(ratingRules, d)
     end
 
     function printCharacters()

@@ -1,7 +1,7 @@
 module Processing
     using DataFrames, JSON
 
-    export processAdditionalData
+    export processAdditionalData, rateArtefacts
 
     # TODO: move in another repo and load them here
     function getArtefactSetBonus(set, count)
@@ -233,6 +233,33 @@ module Processing
             values = artefacts[k]["subStatValues"]
             xs = map(x -> (names[x], values[x]), 1:length(names))
             artefacts[k]["rolls"] = map(x -> x[2] / factor[x[1]], xs)
+        end
+
+        artefacts
+    end
+
+    function rateArtefacts(artefacts, ratingFactors)
+        xs = collect(keys(artefacts))
+        
+        for k in xs
+            subRolls = artefacts[k]["rolls"]
+            subNames = artefacts[k]["subStatNames"]
+            score = map(i -> subRolls[i] * ratingFactors[subNames[i]], 1:4)
+            score = reduce(+, score)
+            scoreFactor = 0
+            ratingFactorsKeys = keys(ratingFactors)
+            r = collect(filter(x -> x != artefacts[k]["mainStatName"], ratingFactorsKeys))
+            rs = map(x -> ratingFactors[x], r)
+            rs = sort(rs, rev=true)
+            if length(rs) > 0
+                scoreFactor += first(rs) * 6
+                if length(rs) > 1
+                    for i in 2:min(length(rs), 4)
+                        scoreFactor += rs[i]
+                    end
+                end
+            end
+            artefacts[k]["rating"] = score/scoreFactor
         end
 
         artefacts
