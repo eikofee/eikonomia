@@ -93,7 +93,7 @@ module EnkaParser
         statType[id]
     end
 
-    function transformArtefactStatValue(name, value)
+    function transformArtefactStatValue(name, value, reverse=false)
         statMultiplier = Dict(
             "FIGHT_PROP_HP" => 1,
             "FIGHT_PROP_ATTACK" => 1,
@@ -116,8 +116,11 @@ module EnkaParser
             "FIGHT_PROP_GRASS_ADD_HURT" => 0.01,
             "FIGHT_PROP_BASE_ATTACK" => 1
         )
-
-        value * statMultiplier[name]
+        res = value * statMultiplier[name]
+        if reverse
+            res = value / statMultiplier[name]
+        end
+        res
     end
 
     function artefactSetToBonus(set, count)
@@ -134,7 +137,7 @@ module EnkaParser
             "Ocean-Hued Clam" => ("Heal%", 0.15),
             "Crimson Witch of Flames" => ("Elem%", 0.15),
             "Emblem of Severed Fate" => ("ER%", 0.2),
-            "Viridescent Venerer" => ("Elem%", 0.16),
+            "Viridescent Venerer" => ("Elem%", 0.15),
             "Pale Flame" => ("Phys%", 0.25),
             "Maiden Beloved" => ("Heal%", 0.15),
             "Gladiator's Finale" => ("ATK%", 0.18),
@@ -223,7 +226,7 @@ module EnkaParser
 
         artefactSetBonuses = getArtefactSetBonus(elm["artefacts"])
 
-        Dict(
+        data = Dict(
             "name" => charData["name"],
             "element" => translateElement(charData["element"]),
             "level" => tof(data["propMap"]["4001"]["val"]),
@@ -254,6 +257,80 @@ module EnkaParser
             "equipPhys%" => fpm(30),
             "equipElem%" => reduce(+, map(x -> fpm(x), 40:46))
         )
+
+        anormalStat = getAnormalStats(data)
+        if length(anormalStat) > 0
+            data["anormalStatName"] = anormalStat[1]
+            data["anormalStatValue"] = anormalStat[2]
+        end
+
+        data
+    end
+
+    function mergeEquipData(data)
+        sumStats = Dict(
+            "HP" => 0.0,
+            "HP%" => 0.0,
+            "ATK" => 0.0,
+            "ATK%" => 0.0,
+            "DEF" => 0.0,
+            "DEF%" => 0.0,
+            "Crit Rate%" => 0.0,
+            "Crit DMG%" => 0.0,
+            "ER%" => 0.0,
+            "Heal%" => 0.0,
+            "EM" => 0.0,
+            "Phys%" => 0.0,
+            "Elem%" => 0.0
+        )
+
+        w = data["weapon"]
+        sumStats[w["mainStatName"]] += w["mainStatValue"]
+        sumStats[w["subStatName"]] += w["subStatValue"]
+        ak = collect(keys(data["artefacts"]))
+        for k in ak
+            a = data["artefacts"][k]
+            sumStats[a["mainStatName"]] += a["mainStatValue"]
+            for index in 1:4
+                sumStats[a["subStatNames"][index]] += a["subStatValues"][index]
+            end
+        end
+
+        println(data["artefactSetBonusNames"])
+        println(data["artefactSetBonusValues"])
+        if length(data["artefactSetBonusNames"]) > 1 && first(data["artefactSetBonusNames"]) != "None"
+            for b in 1:length(data["artefactSetBonusNames"])
+                sumStats[data["artefactSetBonusNames"][b]] += data["artefactSetBonusValues"][b]
+            end
+        end
+
+        sumStats["Crit Rate%"] += 0.05
+        sumStats["Crit DMG%"] += 0.5
+        sumStats["ER%"] += 1.0
+
+        sumStats
+    end
+
+    function getAnormalStats(data)
+        sumStats = mergeEquipData(data)
+        keys = ["HP%","ATK%","DEF%","Crit Rate%","Crit DMG%","ER%","Heal%","EM","Phys%","Elem%"]
+        for k in keys
+            sumStats[k] -= data["equip" * replace(k, " " => "")]
+        end
+        println(data["name"])
+        display(sumStats)
+        res = []
+        for k in keys
+            tr = 2
+            if occursin("%", k)
+                tr = 0.002
+            end
+            if abs(sumStats[k]) > tr
+                push!(res, [k, -1 * sumStats[k]])
+            end
+        end
+        println(res)
+        res
     end
 
     function loadCharStats(data)
