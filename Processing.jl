@@ -143,16 +143,23 @@ module Processing
         )
 
         anormalStats = getAnormalStats(data)
+        asn = "None"
+        asv = 0
+        xsn = []
+        xsv = []
         if length(anormalStats) == 1
             (asn, asv) = first(anormalStats)
-            data["ascensionStatName"] = asn
-            data["ascensionStatValue"] = asv
-            data["anormalStats"] = []
         else
-            data["ascensionStatName"] = []
-            data["ascensionStatValue"] = []
-            data["anormalStats"] = anormalStats
+            (xsn, xsv) = (map(x -> x[1], anormalStats), map(x -> x[2], anormalStats))
         end
+        data["ascension"] = Dict(
+            "statNames" => asn,
+            "statValues"=> asv
+        )
+        data["anormalStats"] = Dict(
+            "statNames" => xsn,
+            "statValues" => xsv
+        )
 
         data["artefacts"] = getArtefactRollPercentages(data["artefacts"])
         data
