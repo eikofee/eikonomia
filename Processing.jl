@@ -110,8 +110,6 @@ module Processing
         for k in keys
             sumStats[k] -= data["equipStats"][k]
         end
-        println(data["name"])
-        display(sumStats)
         res = []
         for k in keys
             tr = 2
@@ -122,7 +120,6 @@ module Processing
                 push!(res, (k, -1 * sumStats[k]))
             end
         end
-        println(res)
         res
     end
 
@@ -156,6 +153,8 @@ module Processing
             data["ascensionStatValue"] = []
             data["anormalStats"] = anormalStats
         end
+
+        data["artefacts"] = getArtefactRollPercentages(data["artefacts"])
         data
     end
 
@@ -188,7 +187,6 @@ module Processing
             end
         end
 
-        display(data["artefactSetBonuses"])
         if length(data["artefactSetBonuses"]["statNames"]) > 0
             for b in 1:length(data["artefactSetBonuses"]["statNames"])
                 sumStats[data["artefactSetBonuses"]["statNames"][b]] += data["artefactSetBonuses"]["statValues"][b]
@@ -206,6 +204,31 @@ module Processing
         sumStats["ER%"] += 1.0
 
         sumStats
+    end
+
+    function getArtefactRollPercentages(artefacts)
+        factor = Dict(
+            "HP" => 298.75,
+            "HP%" => 0.058,
+            "ATK" => 19.45,
+            "ATK%" => 0.058,
+            "DEF" => 23.15,
+            "DEF%" => 0.073,
+            "Crit Rate%" => 0.039,
+            "Crit DMG%" => 0.078,
+            "ER%" => 0.0648,
+            "EM" => 23.31,
+        )
+
+        ks = collect(keys(artefacts))
+        for k in ks
+            names = artefacts[k]["subStatNames"]
+            values = artefacts[k]["subStatValues"]
+            xs = map(x -> (names[x], values[x]), 1:length(names))
+            artefacts[k]["rolls"] = map(x -> x[2] / factor[x[1]], xs)
+        end
+
+        artefacts
     end
 
 end
