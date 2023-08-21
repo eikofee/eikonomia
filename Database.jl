@@ -1,7 +1,7 @@
 module Database
 
     using Mongoc, Dates, JSON
-    export printCharacters, loadCharacter, updateCharacter, loadCharacters, clearDatabase, loadRatingRule, saveRatingRule, loadCharacterNames
+    export printCharacters, loadCharacter, updateCharacter, loadCharacters, clearDatabase, loadRatingRule, saveRatingRule, loadCharacterNames, loadRatingRules
 
     client = Mongoc.Client()
     Mongoc.ping(client)
@@ -57,6 +57,11 @@ module Database
         if d !== nothing
             convertToJson(d)
         end
+    end
+
+    function loadRatingRules()
+        data = map(x -> convertToJson(x), ratingRules)
+        Dict(map(x -> x["name"] => x, data))
     end
 
     function saveRatingRule(rule)

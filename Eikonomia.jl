@@ -28,14 +28,16 @@ module Eikonomia
     end
 
     function test()
-        setFunctionSaveRatingRule(saveRatingRule)
-        setFunctionRateCharacter(rateCharacter)
-        setFunctionRateCharacters(rateCharacters)
-        setFunctionLoadData(loadDataAndProcess)
-        setFunctionLoadCharacters(loadCharacters)
-        setFunctionUpdateCharacter(updateCharacter)
-        setFunctionLoadCharacter(loadCharacter)
-        setFunctionClearDatabase(clearDatabase)
+        setHandler("GetRule", loadRatingRule)
+        setHandler("GetRules", loadRatingRules)
+        setHandler("SaveRatingRule", saveRatingRule)
+        setHandler("RateCharacter", rateCharacter)
+        setHandler("RateCharacters", rateCharacters)
+        setHandler("LoadData", loadDataAndProcess)
+        setHandler("LoadCharacters", loadCharacters)
+        setHandler("UpdateCharacter", updateCharacter)
+        setHandler("LoadCharacter", loadCharacter)
+        setHandler("ClearDatabase", clearDatabase)
         runServer()
     end
 

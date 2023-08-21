@@ -3,52 +3,31 @@ module Server
     include("EnkaParser.jl")
     using HTTP, Sockets, JSON
     export runServer
-    export setFunctionLoadData, setFunctionUpdateCharacter, setFunctionLoadCharacters, setFunctionLoadCharacter, setFunctionClearDatabase
-    export setFunctionSaveRatingRule, setFunctionRateCharacter, setFunctionRateCharacters
+    export setHandler
 
     host = ip"0.0.0.0"
     port = 8080
 
     router = HTTP.Router()
 
-    global f_updateCharacter = x -> ()
-    global f_loadData = () -> []
-    global f_loadCharacters = () -> []
-    global f_clearDatabase = () -> ()
-    global f_saveRatingRule = x -> ()
-    global f_rateCharacters = () -> ()
-    global f_rateCharacter = x -> ()
+    global handlers = Dict(
+        "UpdateCharacter" => x -> (),
+        "LoadData" => () -> [],
+        "LoadCharacters" => () -> [],
+        "ClearDatabase" => () -> (),
+        "SaveRatingRule" => x -> (),
+        "RateCharacters" => () -> (),
+        "RateCharacter" => x -> (),
+        "GetRule" => x -> (),
+    )
+        
 
-    function setFunctionLoadData(f)
-        global f_loadData = f
+    function setHandler(fname, f)
+        global handlers[fname] = f
     end
 
-    function setFunctionSaveRatingRule(f)
-        global f_saveRatingRule = f
-    end
-
-    function setFunctionRateCharacter(f)
-        global f_rateCharacter = f
-    end
-
-    function setFunctionRateCharacters(f)
-        global f_rateCharacters = f
-    end
-
-    function setFunctionLoadCharacter(f)
-        global f_loadCharacter = f
-    end
-
-    function setFunctionUpdateCharacter(f)
-        global f_updateCharacter = f
-    end
-
-    function setFunctionLoadCharacters(f)
-        global f_loadCharacters = f
-    end
-
-    function setFunctionClearDatabase(f)
-        global f_clearDatabase = f
+    function getHandler(fname)
+        handlers[fname]
     end
 
     function registerRoute(path, f)
@@ -76,32 +55,31 @@ module Server
     function queryCharacter(req)
         params = convertTargetToParams(req.target)
         name = params["name"]
-        resp(string(JSON.json(f_loadCharacter(name))))
+        resp(string(JSON.json(getHandler("LoadCharacter")(name))))
     end
 
     function queryAllCharacters(req)
         params = convertTargetToParams(req.target)
         if "rate" in keys(params) && params["rate"] == "true"
-            f_rateCharacters()
+            getHandler("RateCharacters")()
         end
 
-        resp(string(JSON.json(f_loadCharacters())))
+        resp(string(JSON.json(getHandler("LoadCharacters")())))
     end
 
     function clearDatabase(req)
-        f_clearDatabase()
+        getHandler("ClearDatabase")()
         resp("Done")
     end
 
     function refreshData(req)
-        data = f_loadData()
-        foreach(x -> f_updateCharacter(x), data)
+        data = getHandler("LoadData")()
+        foreach(x -> getHandler("UpdateCharacter")(x), data)
         resp("Done")
     end
 
     function registerRatingRule(req)
         params = convertTargetToParams(req.target)
-        display(params)
         name = params["name"]
         ratingRule = Dict(
             "HP" => 0,
@@ -125,16 +103,26 @@ module Server
             "name" => name,
             "rule" => ratingRule
         )
-        f_saveRatingRule(rule)
+        getHandler("SaveRatingRule")(rule)
         resp("Rating rule saved for " * name * ".")
+    end
+
+    function getRule(req)
+        params = convertTargetToParams(req.target)
+        name = params["name"]
+        resp(string(JSON.json(getHandler("GetRule")(name))))
+    end
+
+    function getRules(req)
+        resp(string(JSON.json(getHandler("GetRules")())))
     end
 
     function rateBuilds(req)
         params = convertTargetToParams(req.target)
         if "name" in keys(params)
-            f_rateCharacter(params["name"])
+            getHandler("RateCharacter")(params["name"])
         else
-            f_rateCharacters()
+            getHandler("RateCharacters")()
         end
         resp("Done.")
     end
@@ -147,6 +135,8 @@ module Server
         registerRoute("/clear", clearDatabase)
         registerRoute("/ratingRule", registerRatingRule)
         registerRoute("/rate", rateBuilds)
+        registerRoute("/rule", getRule)
+        registerRoute("/rules", getRules)
     end
 
     function startServer()
