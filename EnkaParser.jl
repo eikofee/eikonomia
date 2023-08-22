@@ -4,6 +4,9 @@ module EnkaParser
 
     localizationCode = "en"
     uid = ENV["GENSHIN_UID"]
+    if uid == "000000000"
+        println("WARNING: UID has not been set !")
+    end
 
     export loadData
 
