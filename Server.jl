@@ -1,6 +1,5 @@
 module Server
-    include("Database.jl")
-    include("EnkaParser.jl")
+
     using HTTP, Sockets, JSON
     export runServer
     export setHandler
@@ -31,7 +30,7 @@ module Server
     end
 
     function registerRoute(path, f)
-        HTTP.@register(router, "GET", path, f)
+        HTTP.register!(router, "GET", path, f)
     end
 
     function resp(content)
@@ -145,6 +144,7 @@ module Server
 
     function runServer()
         initializeRoutes()
+        println("Server is running.")
         startServer()
     end
 end

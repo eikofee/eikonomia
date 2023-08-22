@@ -4,8 +4,8 @@ module Database
     export printCharacters, loadCharacter, updateCharacter, loadCharacters, loadRatingRule, saveRatingRule, loadCharacterNames, loadRatingRules
 
 
-    charactersPath = "./db/characters/"
-    ratingRulesPath = "./db/ratingRules/"
+    charactersPath = "./data/characters/"
+    ratingRulesPath = "./data/ratingRules/"
 
     function findOne(path, name)
         res = nothing
