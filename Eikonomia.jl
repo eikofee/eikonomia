@@ -37,7 +37,7 @@ module Eikonomia
         setHandler("LoadCharacters", loadCharacters)
         setHandler("UpdateCharacter", updateCharacter)
         setHandler("LoadCharacter", loadCharacter)
-        setHandler("ClearDatabase", clearDatabase)
+        # setHandler("ClearDatabase", clearDatabase)
         runServer()
     end
 

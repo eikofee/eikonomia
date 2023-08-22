@@ -1,73 +1,78 @@
 module Database
 
-    using Mongoc, Dates, JSON
-    export printCharacters, loadCharacter, updateCharacter, loadCharacters, clearDatabase, loadRatingRule, saveRatingRule, loadCharacterNames, loadRatingRules
+    using Dates, JSON
+    export printCharacters, loadCharacter, updateCharacter, loadCharacters, loadRatingRule, saveRatingRule, loadCharacterNames, loadRatingRules
 
-    client = Mongoc.Client()
-    Mongoc.ping(client)
-    db = client["eikonomia"]
-    characters = db["characters"]
-    ratingRules = db["ratingRules"]
 
-    function findOne(collection, field, value)
-        Mongoc.find_one(collection, Mongoc.BSON("{\"" * field * "\":\"" * value * "\"}"))
+    charactersPath = "./db/characters/"
+    ratingRulesPath = "./db/ratingRules/"
+
+    function findOne(path, name)
+        res = nothing
+        if isfile(path * name)
+            f = open(path * name, "r")
+            content = read(f, String)
+            close(f)
+            res = JSON.parse(content)
+        end
+        res
     end
 
-    function deleteOne(collection, item)
-        Mongoc.delete_one(collection, item)
+    function deleteOne(path, name)
+        if isfile(path * name)
+            rm(path * name)
+        end
     end
 
-    function convertToJson(o)
-        JSON.parse(Mongoc.as_json(o))
+    function saveOne(path, obj)
+        name = obj["name"]
+        content = JSON.json(obj)
+        f = open(path * name, "w")
+        write(f, content)
+        close(f)
     end
 
     function loadCharacter(name)
-        d = findOne(characters, "name", name)
-        if d !== nothing
-            convertToJson(d)
-        end
+        findOne(charactersPath, name)
     end
 
     function updateCharacter(char)
         name = char["name"]
-        d = findOne(characters, "name", name)
+        d = findOne(charactersPath, name)
         if d !== nothing
-            deleteOne(characters, d)
+            deleteOne(charactersPath, name)
         end
         saveCharacter(char)
     end
 
     function saveCharacter(char)
         char["lastUpdated"] = Dates.now()
-        d = Mongoc.BSON(JSON.json(char))
-        push!(characters, d)
-    end
-
-    function loadCharacters()
-        data = map(x -> convertToJson(x), characters)
-        Dict(map(x -> x["name"] => x, data))
+        saveOne(charactersPath, char)
     end
 
     function loadCharacterNames()
-        map(x -> x["name"], characters)
+        readdir(charactersPath)
+    end
+
+    function loadCharacters()
+        characterNames = loadCharacterNames()
+        data = map(x -> loadCharacter(x), characterNames)
+        Dict(map(x -> x["name"] => x, data))
     end
 
     function loadRatingRule(name)
-        d = findOne(ratingRules, "name", name)
-        if d !== nothing
-            convertToJson(d)
-        end
+        findOne(ratingRulesPath, name)
     end
 
     function loadRatingRules()
-        data = map(x -> convertToJson(x), ratingRules)
+        ratingRules = readdir(ratingRulesPath)
+        data = map(x -> findOne(ratingRulesPath, x), ratingRules)
         Dict(map(x -> x["name"] => x, data))
     end
 
     function saveRatingRule(rule)
         rule["lastUpdated"] = Dates.now()
-        d = Mongoc.BSON(JSON.json(rule))
-        push!(ratingRules, d)
+        saveOne(ratingRulesPath, rule)
     end
 
     function printCharacters()
@@ -75,7 +80,7 @@ module Database
         foreach(x -> display(x), d)
     end
 
-    function clearDatabase()
-        Mongoc.empty!(characters)
-    end
+    # function clearDatabase()
+    #     Mongoc.empty!(characters)
+    # end
 end
