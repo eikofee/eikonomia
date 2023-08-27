@@ -128,9 +128,10 @@ module EnkaParser
     function loadEquipStats(elm)
         function parseEntry(e)
             k = collect(keys(e))
+            res = []
             if "reliquary" in k
                 nbSubstats = length(e["flat"]["reliquarySubstats"])
-                Dict(
+                res = Dict(
                     "type" => "artefact",
                     "icon" => e["flat"]["icon"],
                     "set" => translate(e["flat"]["setNameTextMapHash"]),
@@ -141,18 +142,22 @@ module EnkaParser
                     "subStatValues" => map(x -> transformArtefactStatValue(e["flat"]["reliquarySubstats"][x]["appendPropId"], e["flat"]["reliquarySubstats"][x]["statValue"]), 1:nbSubstats)
                 )
             else
-                Dict(
+                res = Dict(
                     "type" => "weapon",
                     "name" => translate(e["flat"]["nameTextMapHash"]),
                     "icon" => e["flat"]["icon"],
                     "level" => e["weapon"]["level"],
-                    "refinement" => first(e["weapon"]["affixMap"]).second + 1,
+                    
                     "mainStatName" => translateArtefactStatName(e["flat"]["weaponStats"][1]["appendPropId"]),
                     "mainStatValue" => e["flat"]["weaponStats"][1]["statValue"],
-                    "subStatName" => translateArtefactStatName(e["flat"]["weaponStats"][2]["appendPropId"]),
-                    "subStatValue" => transformArtefactStatValue(e["flat"]["weaponStats"][2]["appendPropId"], e["flat"]["weaponStats"][2]["statValue"]),
                 )
+                if "affixMap" in keys(e["weapon"])
+                    res["refinement"] = first(e["weapon"]["affixMap"]).second + 1
+                    res["subStatName"] = translateArtefactStatName(e["flat"]["weaponStats"][2]["appendPropId"])
+                    res["subStatValue"] = transformArtefactStatValue(e["flat"]["weaponStats"][2]["appendPropId"], e["flat"]["weaponStats"][2]["statValue"])
+                end
             end
+            res
         end
 
         xs = map(x -> parseEntry(x), elm)

@@ -29,7 +29,9 @@ module Processing
             "Flower of Paradise Lost" => ("EM", 80),
             "Desert Pavilion Chronicle" => ("Elem%", 0.15),
             "Nymph's Dream" => ("Elem%", 0.15),
-            "Vourukasha's Glow" => ("HP%", 0.2)
+            "Vourukasha's Glow" => ("HP%", 0.2),
+            "The Exile" => ("ER%", 0.2),
+            "Noblesse Oblige" => ("None", 0.0)
         )
         
         bonus = ("None", 0)
@@ -37,7 +39,7 @@ module Processing
             if set in collect(keys(setEffects2pc))
                 bonus = setEffects2pc[set]
             else
-                bonus = ("Unknown", 2)
+                bonus = ("Unknown: " * set, 2)
             end
         end
         bonus
@@ -184,19 +186,23 @@ module Processing
 
         w = data["weapon"]
         sumStats[w["mainStatName"]] += w["mainStatValue"]
-        sumStats[w["subStatName"]] += w["subStatValue"]
+        if "subStatName" in keys(w)
+            sumStats[w["subStatName"]] += w["subStatValue"]
+        end
         ak = collect(keys(data["artefacts"]))
         for k in ak
             a = data["artefacts"][k]
             sumStats[a["mainStatName"]] += a["mainStatValue"]
-            for index in 1:4
+            for index in 1:length(a["subStatNames"])
                 sumStats[a["subStatNames"][index]] += a["subStatValues"][index]
             end
         end
 
         if length(data["artefactSetBonuses"]["statNames"]) > 0
             for b in 1:length(data["artefactSetBonuses"]["statNames"])
-                sumStats[data["artefactSetBonuses"]["statNames"][b]] += data["artefactSetBonuses"]["statValues"][b]
+                if data["artefactSetBonuses"]["statNames"][b] != "None"
+                    sumStats[data["artefactSetBonuses"]["statNames"][b]] += data["artefactSetBonuses"]["statValues"][b]
+                end
             end
         end
 
