@@ -129,6 +129,7 @@ module EnkaParser
         function parseEntry(e)
             k = collect(keys(e))
             if "reliquary" in k
+                nbSubstats = length(e["flat"]["reliquarySubstats"])
                 Dict(
                     "type" => "artefact",
                     "icon" => e["flat"]["icon"],
@@ -136,8 +137,8 @@ module EnkaParser
                     "subtype" => translateEquipType(e["flat"]["equipType"]),
                     "mainStatName" => translateArtefactStatName(e["flat"]["reliquaryMainstat"]["mainPropId"]),
                     "mainStatValue" => transformArtefactStatValue(e["flat"]["reliquaryMainstat"]["mainPropId"], e["flat"]["reliquaryMainstat"]["statValue"]),
-                    "subStatNames" => map(x -> translateArtefactStatName(e["flat"]["reliquarySubstats"][x]["appendPropId"]), 1:4),
-                    "subStatValues" => map(x -> transformArtefactStatValue(e["flat"]["reliquarySubstats"][x]["appendPropId"], e["flat"]["reliquarySubstats"][x]["statValue"]), 1:4)
+                    "subStatNames" => map(x -> translateArtefactStatName(e["flat"]["reliquarySubstats"][x]["appendPropId"]), 1:nbSubstats),
+                    "subStatValues" => map(x -> transformArtefactStatValue(e["flat"]["reliquarySubstats"][x]["appendPropId"], e["flat"]["reliquarySubstats"][x]["statValue"]), 1:nbSubstats)
                 )
             else
                 Dict(

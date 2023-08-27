@@ -74,7 +74,7 @@ module Server
     function refreshData(req)
         data = getHandler("LoadData")()
         foreach(x -> getHandler("UpdateCharacter")(x), data)
-        resp("Done")
+        rateBuilds(req)
     end
 
     function registerRatingRule(req)
