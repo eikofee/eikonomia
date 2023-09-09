@@ -31,7 +31,9 @@ module Processing
             "Nymph's Dream" => ("Elem%", 0.15),
             "Vourukasha's Glow" => ("HP%", 0.2),
             "The Exile" => ("ER%", 0.2),
-            "Noblesse Oblige" => ("None", 0.0)
+            "Noblesse Oblige" => ("None", 0.0),
+            "Marechaussee Hunter" => ("None", 0.0),
+            "Golden Troupe" => ("None", 0.0)
         )
         
         bonus = ("None", 0)
