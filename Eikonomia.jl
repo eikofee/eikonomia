@@ -4,6 +4,9 @@ module Eikonomia
     include("Database.jl")
     include("Server.jl")
     include("Processing.jl")
+
+    envCron = ENV["EIKONOMIYA_RUN_CRON"] == "1"
+
     using .EnkaParser, .Database, .Server, .Processing
 
     function loadDataAndProcess()
@@ -27,7 +30,13 @@ module Eikonomia
         end
     end
 
+    function runCron()
+        command = `/usr/sbin/crond -f -d 0`
+        run(command)
+    end
+
     function test()
+        initializeFolders()
         setHandler("GetRule", loadRatingRule)
         setHandler("GetRules", loadRatingRules)
         setHandler("SaveRatingRule", saveRatingRule)
@@ -37,6 +46,9 @@ module Eikonomia
         setHandler("LoadCharacters", loadCharacters)
         setHandler("UpdateCharacter", updateCharacter)
         setHandler("LoadCharacter", loadCharacter)
+        if (envCron)
+            @async runCron()
+        end
         # setHandler("ClearDatabase", clearDatabase)
         runServer()
     end

@@ -2,10 +2,19 @@ module Database
 
     using Dates, JSON
     export printCharacters, loadCharacter, updateCharacter, loadCharacters, loadRatingRule, saveRatingRule, loadCharacterNames, loadRatingRules
-
+    export initializeFolders
 
     charactersPath = "./data/characters/"
     ratingRulesPath = "./data/ratingRules/"
+
+    function initializeFolders()
+        if !isdir(charactersPath)
+            mkdir(charactersPath)
+        end
+        if !isdir(ratingRulesPath)
+            mkdir(ratingRulesPath)
+        end
+    end
 
     function findOne(path, name)
         res = nothing
