@@ -55,7 +55,6 @@ module Database
     end
 
     function saveCharacter(char)
-        char["lastUpdated"] = Dates.now()
         saveOne(charactersPath, char)
     end
 

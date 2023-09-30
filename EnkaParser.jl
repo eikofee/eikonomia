@@ -1,6 +1,6 @@
 module EnkaParser
 
-    using HTTP, JSON, DataFrames
+    using HTTP, JSON, DataFrames, Dates
 
     localizationCode = "en"
     uid = ENV["GENSHIN_UID"]
@@ -219,6 +219,7 @@ module EnkaParser
                 "Phys%" => fpm(30),
                 "Elem%" => reduce(+, map(x -> fpm(x), 40:46))
             ),
+            "lastUpdated" => Dates.now()
         )
 
         # anormalStat = getAnormalStats(data)
