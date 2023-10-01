@@ -20,16 +20,42 @@ module EnkaParser
     end
 
     localizationTable = loadLocalizationTable()
+    localizationTable["1533656818"] = "Aether"
+    localizationTable["3816664530"] = "Lumine"
+
 
     function translate(id)
         id = string(id)
         localizationTable[id]
     end
 
-    function getCharData(charId)
+    function changeIdIfTraveler(charId, skills, j)
+        res = charId
+        if !isempty(skills) && (cmp(charId,"10000007") == 0 || cmp(charId, "10000005") == 0)
+            subCharId = 500
+            if cmp(charId, "10000007") == 0
+                subCharId = 700
+            end
+
+            for x in 1:8
+                cid = charId * "-" * string(subCharId + x)
+                if !isempty(j[cid])
+                    ss = string.(j[cid]["SkillOrder"])
+                    if first(skills) in ss
+                        res = cid
+                    end
+                end
+            end
+        end
+
+        res
+    end
+
+    function getCharData(charId, skillLevelMap)
         r = HTTP.get("https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/characters.json")
         j = JSON.parse(String(r.body))
         charId = string(charId)
+        charId = changeIdIfTraveler(charId, collect(keys(skillLevelMap)), j)
         Dict(
         "id" => charId,
         "name" => translate(j[charId]["NameTextMapHash"]),
@@ -170,7 +196,7 @@ module EnkaParser
     end
 
     function loadCharStat(data)
-        charData = getCharData(data["avatarId"])
+        charData = getCharData(data["avatarId"], data["skillLevelMap"])
         fpmData = data["fightPropMap"]
         elmData = data["equipList"]
         function fpm(id)
