@@ -11,6 +11,9 @@ This is a piece of software aiming at:
 - Docker
 
 ## Installation
+
+Pre-built Docker image is available on DockerHub : https://hub.docker.com/repository/docker/eikofee/eikonomiya/general
+
 First run 
 ```
 docker build -t eikonomiya .
