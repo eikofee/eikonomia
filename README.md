@@ -1,4 +1,4 @@
-# Eikonomia
+# Eikonomiya
 *pun between "eiko" and "enkanomiya" which is also the name used by enka.network fetching genshin in-game data.*
 
 This is a piece of software aiming at:
