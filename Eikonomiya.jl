@@ -1,4 +1,4 @@
-module Eikonomia
+module Eikonomiya
 
     include("EnkaParser.jl")
     include("Database.jl")

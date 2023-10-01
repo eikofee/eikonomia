@@ -11,4 +11,4 @@ COPY *.jl ./
 COPY auto-refresh /etc/cron.d/auto-update
 RUN chmod 0644 /etc/cron.d/auto-update
 RUN crontab /etc/cron.d/auto-update
-CMD ["julia", "Eikonomia.jl"]
+CMD ["julia", "Eikonomiya.jl"]
