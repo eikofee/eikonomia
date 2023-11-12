@@ -1,4 +1,5 @@
 .vscode
 db/
 data/
+data-cron/
 *.tar

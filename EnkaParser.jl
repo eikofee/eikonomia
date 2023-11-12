@@ -14,14 +14,15 @@ module EnkaParser
         parse(Float64, string(txt))
     end
 
+    localizationTable = []
+
     function loadLocalizationTable()
         r = HTTP.get("https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/loc.json")
-        JSON.parse(String(r.body))[localizationCode]
+        localizationTable = JSON.parse(String(r.body))[localizationCode]
+        localizationTable["1533656818"] = "Aether"
+        localizationTable["3816664530"] = "Lumine"
     end
 
-    localizationTable = loadLocalizationTable()
-    localizationTable["1533656818"] = "Aether"
-    localizationTable["3816664530"] = "Lumine"
 
 
     function translate(id)
@@ -266,6 +267,7 @@ module EnkaParser
     end
 
     function loadData()
+        loadLocalizationTable()
         data = loadPlayerData()
         loadCharStats(data)
     end
