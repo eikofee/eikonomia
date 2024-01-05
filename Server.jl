@@ -68,7 +68,11 @@ module Server
 
     function clearDatabase(req)
         getHandler("ClearDatabase")()
-        resp("Done")
+        ans = Dict(
+            "code" => 200,
+            "message" => "Refresh done."
+        )
+        resp(string(JSON.json(ans)))
     end
 
     function refreshData(req)
@@ -103,7 +107,12 @@ module Server
             "rule" => ratingRule
         )
         getHandler("SaveRatingRule")(rule)
-        resp("Rating rule saved for " * name * ".")
+        ans = Dict(
+            "code" => 200,
+            "message" => "Rating rule saved for " * name * "."
+        )
+
+        resp(string(JSON.json(ans)))
     end
 
     function getRule(req)
@@ -123,7 +132,11 @@ module Server
         else
             getHandler("RateCharacters")()
         end
-        resp("Done.")
+        ans = Dict(
+            "code" => 200,
+            "message" => "Refresh done."
+        )
+        resp(string(JSON.json(ans)))
     end
 
     function initializeRoutes()

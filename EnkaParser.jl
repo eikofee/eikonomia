@@ -27,7 +27,11 @@ module EnkaParser
 
     function translate(id)
         id = string(id)
-        localizationTable[id]
+        if id in localizationTable
+            localizationTable[id]
+        else
+            id
+        end
     end
 
     function changeIdIfTraveler(charId, skills, j)

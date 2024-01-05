@@ -1,5 +1,5 @@
 module Processing
-    using DataFrames, JSON
+    using DataFrames, JSON, YAML
 
     export processAdditionalData, rateArtefacts
 
@@ -128,24 +128,6 @@ module Processing
     end
 
     function processAdditionalData(data)
-        (setBonusStatNames, setBonusStatValues) = getArtefactSetBonuses(data["artefacts"])
-        data["artefactSetBonuses"] = Dict(
-            "statNames" => setBonusStatNames,
-            "statValues" => setBonusStatValues
-        )
-
-        (weaponPassivesStatNames, weaponPassivesStatValues) = weaponPassive(data["weapon"])
-        data["weaponPassives"] = Dict(
-            "statNames" => weaponPassivesStatNames,
-            "statValues" => weaponPassivesStatValues,
-        )
-
-        (charPassivesStatNames, charPassivesStatValues) = charPassive(data)
-        data["charPassives"] = Dict(
-            "statNames" => charPassivesStatNames,
-            "statValues" => charPassivesStatValues,
-        )
-
         anormalStats = getAnormalStats(data)
         asn = "None"
         asv = 0
@@ -197,20 +179,6 @@ module Processing
             sumStats[a["mainStatName"]] += a["mainStatValue"]
             for index in 1:length(a["subStatNames"])
                 sumStats[a["subStatNames"][index]] += a["subStatValues"][index]
-            end
-        end
-
-        if length(data["artefactSetBonuses"]["statNames"]) > 0
-            for b in 1:length(data["artefactSetBonuses"]["statNames"])
-                if data["artefactSetBonuses"]["statNames"][b] != "None"
-                    sumStats[data["artefactSetBonuses"]["statNames"][b]] += data["artefactSetBonuses"]["statValues"][b]
-                end
-            end
-        end
-
-        if length(data["weaponPassives"]["statNames"]) > 0
-            for p in 1:length(data["weaponPassives"]["statNames"])
-                sumStats[data["weaponPassives"]["statNames"][p]] += data["weaponPassives"]["statValues"][p]
             end
         end
 
